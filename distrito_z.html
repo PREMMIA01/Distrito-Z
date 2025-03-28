@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Painel de Funções vRP</title>
+  <style>
+    body { font-family: Arial, sans-serif; background-color: #1e1e2f; color: #eee; margin: 0; padding: 20px; }
+    h1 { text-align: center; color: #67e8f9; }
+
+    #logo {
+      text-align: center;
+      margin-bottom: 30px;
+    }
+
+    #logo img {
+      width: 150px; /* Ajuste o tamanho conforme necessário */
+      height: auto;
+    }
+
+    input[type="text"] {
+      width: 100%; padding: 10px; margin-bottom: 20px; font-size: 16px; border-radius: 5px; border: none;
+    }
+    
+    .funcao {
+      background: #2e2e3e; border-radius: 10px; padding: 15px; margin-bottom: 10px;
+    }
+    
+    .nome { font-size: 18px; color: #4ade80; font-weight: bold; }
+    .desc { font-size: 15px; color: #ccc; margin-top: 5px; }
+    .exemplo { font-family: monospace; background: #111; padding: 10px; border-radius: 5px; margin-top: 10px; white-space: pre-wrap; }
+  </style>
+</head>
+<body>
+  <!-- Logo -->
+  <div id="logo">
+   <img src="file:///C:/xampp/htdocs/inventario/logo.png" alt="Distrito Z">
+  </div>
+  
+  <h1>Painel de Funções vRP / Creative Network</h1>
+  <input type="text" id="busca" placeholder="Digite para buscar funções...">
+
+  <div id="funcoes"></div>
+
+  <script>
+    const listaFuncoes = [
+      {
+        nome: 'vRP.PaymentFull(Passport, Amount, IgnoreLimit)',
+        desc: 'Tenta pagar com dinheiro em mão e banco se necessário.',
+        exemplo: 'vRP.PaymentFull(1234, 100, false)'
+      },
+      {
+        nome: 'vRP.WithdrawCash(Passport, Amount)',
+        desc: 'Transfere dinheiro da conta bancária para dinheiro em mão.',
+        exemplo: 'vRP.WithdrawCash(1234, 200)'
+      },
+      {
+        nome: 'vRP.ClearInventory(Passport)',
+        desc: 'Remove todos os itens do mochila/inventário do jogador.',
+        exemplo: 'vRP.ClearInventory(1234)'
+      },
+      {
+        nome: 'tvRP.PlaySound(Dict, Name)',
+        desc: 'Reproduz um som no cliente.',
+        exemplo: 'tvRP.PlaySound("ATM_WINDOW", "CASH_PAYMENT")'
+      },
+      {
+        nome: 'tvRP.playAnim(Upper, Sequency, Loop)',
+        desc: 'Executa animação no personagem.',
+        exemplo: 'tvRP.playAnim(true, ["amb@world_human_clipboard@male@idle_a", "idle_a"], true)'
+      },
+      {
+        nome: 'tvRP.ClosestPeds(Radius)',
+        desc: 'Retorna todos os peds próximos dentro do raio.',
+        exemplo: 'local peds = tvRP.ClosestPeds(15.0)'
+      },
+      {
+        nome: 'vRP.Revive(source, Health, Arena)',
+        desc: 'Revive o jogador com uma quantidade de vida definida.',
+        exemplo: 'vRP.Revive(source, 110, false)'
+      },
+      {
+        nome: 'vRP.SetPermission(Identity, Permission)',
+        desc: 'Define uma permissão para o jogador.',
+        exemplo: 'vRP.SetPermission(1234, "admin")'
+      },
+      {
+        nome: 'vRP.HasPermission(Identity, Permission)',
+        desc: 'Verifica se o jogador tem uma permissão.',
+        exemplo: 'vRP.HasPermission(1234, "admin")'
+      },
+      {
+        nome: 'vRP.UpdateSkin(Identity, Skin)',
+        desc: 'Atualiza o modelo de skin do jogador.',
+        exemplo: 'vRP.UpdateSkin(1234, "m_m_swat_01")'
+      },
+      {
+        nome: 'vRP.HasService(Identity, Service)',
+        desc: 'Verifica se o jogador está em um serviço específico.',
+        exemplo: 'vRP.HasService(1234, "paramedic")'
+      },
+      {
+        nome: 'vRP.SendMessage(Identity, Message)',
+        desc: 'Envia uma mensagem para o jogador.',
+        exemplo: 'vRP.SendMessage(1234, "Bem-vindo ao servidor!")'
+      },
+      {
+        nome: 'vRP.AddGroup(Identity, Group)',
+        desc: 'Adiciona um grupo ao jogador.',
+        exemplo: 'vRP.AddGroup(1234, "police")'
+      },
+      {
+        nome: 'vRP.RemoveGroup(Identity, Group)',
+        desc: 'Remove um grupo do jogador.',
+        exemplo: 'vRP.RemoveGroup(1234, "police")'
+      },
+      {
+        nome: 'vRP.GiveItem(Identity, Item, Quantity)',
+        desc: 'Dá um item ao jogador.',
+        exemplo: 'vRP.GiveItem(1234, "pistola", 1)'
+      },
+      {
+        nome: 'vRP.RemoveItem(Identity, Item, Quantity)',
+        desc: 'Remove um item do jogador.',
+        exemplo: 'vRP.RemoveItem(1234, "pistola", 1)'
+      },
+      {
+        nome: 'vRP.AddMoney(Identity, Amount)',
+        desc: 'Adiciona dinheiro ao jogador.',
+        exemplo: 'vRP.AddMoney(1234, 1000)'
+      },
+      {
+        nome: 'vRP.RemoveMoney(Identity, Amount)',
+        desc: 'Remove dinheiro do jogador.',
+        exemplo: 'vRP.RemoveMoney(1234, 500)'
+      },
+      {
+        nome: 'vRP.GetWeight(Identity)',
+        desc: 'Retorna o peso total do mochila/inventário do jogador.',
+        exemplo: 'local weight = vRP.GetWeight(1234)'
+      },
+      {
+        nome: 'vRP.SetWeight(Identity, Weight)',
+        desc: 'Define o peso total do mochila/inventário do jogador.',
+        exemplo: 'vRP.SetWeight(1234, 50)'
+      },
+      {
+        nome: 'vRP.GetBank(Identity)',
+        desc: 'Retorna o saldo bancário do jogador.',
+        exemplo: 'local bank = vRP.GetBank(1234)'
+      },
+      {
+        nome: 'vRP.GiveBank(Identity, Amount)',
+        desc: 'Adiciona dinheiro ao banco do jogador.',
+        exemplo: 'vRP.GiveBank(1234, 1000)'
+      },
+      {
+        nome: 'vRP.RemoveBank(Identity, Amount)',
+        desc: 'Remove dinheiro do banco do jogador.',
+        exemplo: 'vRP.RemoveBank(1234, 500)'
+      },
+      {
+        nome: 'vRP.InventoryFull(Identity)',
+        desc: 'Verifica se o mochila/inventário do jogador está cheio.',
+        exemplo: 'local full = vRP.InventoryFull(1234)'
+      },
+      {
+        nome: 'vRP.GetInventoryItemAmount(Identity, Item)',
+        desc: 'Retorna a quantidade de um item no mochila/inventário do jogador.',
+        exemplo: 'local amount = vRP.GetInventoryItemAmount(1234, "pistola")'
+      },
+      {
+        nome: 'vRP.SetWeight(Identity, Weight)',
+        desc: 'Define o peso do mochila/inventário do jogador.',
+        exemplo: 'vRP.SetWeight(1234, 50)'
+      },
+	  {
+        nome: 'vRP.ClearInventory(Passport)',
+        desc: 'Remove todos os itens do mochila/inventário do jogador.',
+        exemplo: 'vRP.ClearInventory(1234)'
+      },
+      {
+        nome: 'tvRP.playAnim(Upper, Sequency, Loop)',
+        desc: 'Executa animação no personagem.',
+        exemplo: 'tvRP.playAnim(true, ["amb@world_human_clipboard@male@idle_a", "idle_a"], true)'
+      },
+      {
+        nome: 'tvRP.ClosestPeds(Radius)',
+        desc: 'Retorna todos os peds próximos dentro do raio.',
+        exemplo: 'local peds = tvRP.ClosestPeds(15.0)'
+      },
+      {
+        nome: 'vRP.Revive(source, Health, Arena)',
+        desc: 'Revive o jogador com uma quantidade de vida definida.',
+        exemplo: 'vRP.Revive(source, 110, false)'
+      },
+      {
+        nome: 'vRP.SetPermission(Identity, Permission)',
+        desc: 'Define uma permissão para o jogador.',
+        exemplo: 'vRP.SetPermission(1234, "admin")'
+      },
+      {
+        nome: 'vRP.HasPermission(Identity, Permission)',
+        desc: 'Verifica se o jogador tem uma permissão.',
+        exemplo: 'vRP.HasPermission(1234, "admin")'
+      },
+      {
+        nome: 'vRP.UpdateSkin(Identity, Skin)',
+        desc: 'Atualiza o modelo de skin do jogador.',
+        exemplo: 'vRP.UpdateSkin(1234, "m_m_swat_01")'
+      },
+      {
+        nome: 'vRP.HasService(Identity, Service)',
+        desc: 'Verifica se o jogador está em um serviço específico.',
+        exemplo: 'vRP.HasService(1234, "paramedic")'
+      },
+      {
+        nome: 'vRP.SendMessage(Identity, Message)',
+        desc: 'Envia uma mensagem para o jogador.',
+        exemplo: 'vRP.SendMessage(1234, "Bem-vindo ao servidor!")'
+      },
+      {
+        nome: 'vRP.AddGroup(Identity, Group)',
+        desc: 'Adiciona um grupo ao jogador.',
+        exemplo: 'vRP.AddGroup(1234, "police")'
+      },
+      {
+        nome: 'vRP.RemoveGroup(Identity, Group)',
+        desc: 'Remove um grupo do jogador.',
+        exemplo: 'vRP.RemoveGroup(1234, "police")'
+      },
+      {
+        nome: 'vRP.GiveItem(Identity, Item, Quantity)',
+        desc: 'Dá um item ao jogador.',
+        exemplo: 'vRP.GiveItem(1234, "pistola", 1)'
+      },
+      {
+        nome: 'vRP.RemoveItem(Identity, Item, Quantity)',
+        desc: 'Remove um item do jogador.',
+        exemplo: 'vRP.RemoveItem(1234, "pistola", 1)'
+      },
+      {
+        nome: 'vRP.AddMoney(Identity, Amount)',
+        desc: 'Adiciona dinheiro ao jogador.',
+        exemplo: 'vRP.AddMoney(1234, 1000)'
+      },
+      {
+        nome: 'vRP.RemoveMoney(Identity, Amount)',
+        desc: 'Remove dinheiro do jogador.',
+        exemplo: 'vRP.RemoveMoney(1234, 500)'
+      },
+      {
+        nome: 'vRP.GetWeight(Identity)',
+        desc: 'Retorna o peso total do mochila/inventário do jogador.',
+        exemplo: 'local weight = vRP.GetWeight(1234)'
+      },
+      {
+        nome: 'vRP.SetWeight(Identity, Weight)',
+        desc: 'Define o peso total do mochila/inventário do jogador.',
+        exemplo: 'vRP.SetWeight(1234, 50)'
+      },
+      {
+        nome: 'vRP.GetBank(Identity)',
+        desc: 'Retorna o saldo bancário do jogador.',
+        exemplo: 'local bank = vRP.GetBank(1234)'
+      },
+      {
+        nome: 'vRP.GiveBank(Identity, Amount)',
+        desc: 'Adiciona dinheiro ao banco do jogador.',
+        exemplo: 'vRP.GiveBank(1234, 1000)'
+      },
+      {
+        nome: 'vRP.RemoveBank(Identity, Amount)',
+        desc: 'Remove dinheiro do banco do jogador.',
+        exemplo: 'vRP.RemoveBank(1234, 500)'
+      },
+      {
+        nome: 'vRP.InventoryFull(Identity)',
+        desc: 'Verifica se o mochila/inventário do jogador está cheio.',
+        exemplo: 'local full = vRP.InventoryFull(1234)'
+      },
+      {
+        nome: 'vRP.GetInventoryItemAmount(Identity, Item)',
+        desc: 'Retorna a quantidade de um item no mochila/inventário do jogador.',
+        exemplo: 'local amount = vRP.GetInventoryItemAmount(1234, "pistola")'
+      },
+      {
+        nome: 'vRP.SetWeight(Identity, Weight)',
+        desc: 'Define o peso do mochila/inventário do jogador.',
+        exemplo: 'vRP.SetWeight(1234, 50)'
+      }
+    ];
+
+    const funcoesContainer = document.getElementById('funcoes');
+    const inputBusca = document.getElementById('busca');
+
+    function renderFuncoes(filtro = '') {
+      funcoesContainer.innerHTML = '';
+      listaFuncoes.filter(f => f.nome.toLowerCase().includes(filtro.toLowerCase()) || f.desc.toLowerCase().includes(filtro.toLowerCase()))
+        .forEach(func => {
+          const div = document.createElement('div');
+          div.className = 'funcao';
+          div.innerHTML = `<div class="nome">${func.nome}</div><div class="desc">${func.desc}</div><div class="exemplo">${func.exemplo}</div>`;
+          funcoesContainer.appendChild(div);
+        });
+    }
+
+    inputBusca.addEventListener('input', () => {
+      renderFuncoes(inputBusca.value);
+    });
+
+    renderFuncoes();
+  </script>
+</body>
+</html>
